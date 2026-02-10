@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokemon API</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main>
+        <h1>Pokemon Details</h1>
+        <div class="nav">
+            <button id="prev" type="button">Previous</button>
+            <span id="counter" aria-live="polite"></span>
+            <button id="next" type="button">Next</button>
+        </div>
+        <section id="details" aria-live="polite"></section>
+        <section class="upcoming">
+            <h2>Next 20 Pokemon</h2>
+            <ul id="upcoming" aria-live="polite"></ul>
+        </section>
+    </main>
+    <script src="javascript.js"></script>
+</body>
+</html>
+<!--
+Notes are for me while we were in class.
+Submit is not good in react  it reloads the page and it makes all changes disappear.
+event listener with the value "submit" is better because it doesn't reload the page and it allows us to keep all the changes we made.
+ie form.addEventListener("submit", () => { ... })
+callback can always accept an argument
+submit event refreshes your page.
+event.preventDefault() is used to stop the default behavior of an event. lets you define something else you want it to do.
+you can still use the input submit but these above steps will stop issues from refreshing the page.
+-->
