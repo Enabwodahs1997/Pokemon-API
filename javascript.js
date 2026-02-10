@@ -167,7 +167,7 @@ function updateNav() {
 	}
 
 	if (nextBtn) {
-		nextBtn.disabled = currentId >= MAX_POKEMON_ID;
+		nextBtn.disabled = currentId >= MAX_POKEMON_ID; //this stops it from going past the max Pokemon ID, which is important since it would cause errors if it tried to load a Pokemon that doesn't exist. Which would be silly.
 	}
 }
 console.log("updateNav function defined:", updateNav);
