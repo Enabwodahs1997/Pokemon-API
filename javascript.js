@@ -17,6 +17,9 @@ var upcomingEl = document.getElementById("upcoming");
 var prevSpriteBtn = document.getElementById("prev-sprite");
 var nextSpriteBtn = document.getElementById("next-sprite");
 var spriteTypeEl = document.getElementById("sprite-type");
+var toggleDetailsBtn = document.getElementById("toggle-details");
+var detailedStatsEl = document.getElementById("detailed-stats");
+var contentWrapperEl = document.querySelector(".content-wrapper");
 
 // Track which Pokemon ID is currently shown.
 var currentId = 1;
@@ -24,6 +27,7 @@ var currentId = 1;
 var currentSpriteIndex = 0;
 var availableSprites = [];
 var currentPokemonData = null;
+var detailsVisible = false;
 
 // Fetch one Pokemon by ID, then run a callback with the data.
 // A callback is needed because fetch() finishes later, so we pass a function
@@ -182,6 +186,15 @@ console.log("Details element found:", detailsEl);
 	
 	// Update sprite controls
 	updateSpriteControls();
+	
+	// Show the toggle button and update detailed stats if visible
+	if (toggleDetailsBtn) {
+		toggleDetailsBtn.style.display = "block";
+	}
+	
+	if (detailsVisible) {
+		renderDetailedStats(pokemon);
+	}
 }
 console.log("renderDetails function defined:", renderDetails);
 
@@ -244,6 +257,102 @@ function updateSpriteControls() {
 }
 console.log("updateSpriteControls function defined:", updateSpriteControls);
 
+// Render detailed Pokemon stats in the side panel
+function renderDetailedStats(pokemon) {
+	if (!detailedStatsEl || !pokemon) {
+		return;
+	}
+
+	var html = "<h3>Detailed Stats</h3>";
+
+	// Basic Information
+	html += "<div class='stat-group'>";
+	html += "<h4>Basic Info</h4>";
+	html += `<div class='stat-item'><span class='label'>ID</span><span class='value'>#${pokemon.id}</span></div>`;
+	html += `<div class='stat-item'><span class='label'>Height</span><span class='value'>${(pokemon.height / 10).toFixed(1)} m</span></div>`;
+	html += `<div class='stat-item'><span class='label'>Weight</span><span class='value'>${(pokemon.weight / 10).toFixed(1)} kg</span></div>`;
+	html += `<div class='stat-item'><span class='label'>Base Experience</span><span class='value'>${pokemon.base_experience || 'N/A'}</span></div>`;
+	html += "</div>";
+
+	// Types
+	if (pokemon.types && pokemon.types.length > 0) {
+		html += "<div class='stat-group'>";
+		html += "<h4>Types</h4>";
+		html += "<div>";
+		for (var i = 0; i < pokemon.types.length; i++) {
+			html += `<span class='type-badge'>${pokemon.types[i].type.name}</span>`;
+		}
+		html += "</div>";
+		html += "</div>";
+	}
+
+	// Abilities
+	if (pokemon.abilities && pokemon.abilities.length > 0) {
+		html += "<div class='stat-group'>";
+		html += "<h4>Abilities</h4>";
+		for (var i = 0; i < pokemon.abilities.length; i++) {
+			var ability = pokemon.abilities[i];
+			var abilityName = ability.ability.name;
+			if (ability.is_hidden) {
+				abilityName += " (Hidden)";
+			}
+			html += `<div class='ability-item'>${abilityName}</div>`;
+		}
+		html += "</div>";
+	}
+
+	// Base Stats
+	if (pokemon.stats && pokemon.stats.length > 0) {
+		html += "<div class='stat-group'>";
+		html += "<h4>Base Stats</h4>";
+		var maxStat = 255; // Pokemon stats typically max at 255
+		for (var i = 0; i < pokemon.stats.length; i++) {
+			var stat = pokemon.stats[i];
+			var statName = stat.stat.name.replace("-", " ");
+			var statValue = stat.base_stat;
+			var percentage = (statValue / maxStat) * 100;
+			html += `<div class='stat-item'>`;
+			html += `<span class='label'>${statName}</span>`;
+			html += `<span class='value'>${statValue}</span>`;
+			html += `</div>`;
+			html += `<div class='stat-bar'><div class='stat-bar-fill' style='width: ${percentage}%'></div></div>`;
+		}
+		html += "</div>";
+	}
+
+	detailedStatsEl.innerHTML = html;
+}
+
+// Toggle the detailed stats panel
+function toggleDetailedStats() {
+	detailsVisible = !detailsVisible;
+	
+	if (detailsVisible) {
+		if (contentWrapperEl) {
+			contentWrapperEl.classList.add("show-details");
+		}
+		if (detailedStatsEl) {
+			detailedStatsEl.classList.remove("hidden");
+		}
+		if (toggleDetailsBtn) {
+			toggleDetailsBtn.textContent = "Hide Detailed Stats";
+		}
+		if (currentPokemonData) {
+			renderDetailedStats(currentPokemonData);
+		}
+	} else {
+		if (contentWrapperEl) {
+			contentWrapperEl.classList.remove("show-details");
+		}
+		if (detailedStatsEl) {
+			detailedStatsEl.classList.add("hidden");
+		}
+		if (toggleDetailsBtn) {
+			toggleDetailsBtn.textContent = "Show Detailed Stats";
+		}
+	}
+}
+
 // Show a loading message, fetch the Pokemon, then render it.
 function loadPokemon(id) {
 	if (detailsEl) {
@@ -275,6 +384,22 @@ function loadPokemon(id) {
 
 	fetchPokemonList(nextStart - 1, limit, function (listData) {
 		renderUpcoming(listData, nextStart);
+	});
+}
+
+// Listen for clicks on the upcoming Pokemon list to jump to that Pokemon
+if (upcomingEl) {
+	upcomingEl.addEventListener("click", (event) => {
+		if (event.target.tagName === "LI") {
+			// Extract the Pokemon ID from the list item text (format: "#123 pokemon-name")
+			var text = event.target.textContent;
+			var match = text.match(/#(\d+)/);
+			if (match) {
+				var clickedId = parseInt(match[1]);
+				currentId = clickedId;
+				loadPokemon(currentId);
+			}
+		}
 	});
 }
 console.log("loadPokemon function defined:", loadPokemon);
@@ -329,6 +454,13 @@ function init() {
 				}
 				renderDetails(currentPokemonData);
 			}
+		});
+	}
+
+	// Add detailed stats toggle button
+	if (toggleDetailsBtn) {
+		toggleDetailsBtn.addEventListener("click", () => {
+			toggleDetailedStats();
 		});
 	}
 

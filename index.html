@@ -19,7 +19,13 @@
             <span id="sprite-type" aria-live="polite"></span>
             <button id="next-sprite" type="button">Next Image →</button>
         </div>
-        <section id="details" aria-live="polite"></section>
+        <div class="content-wrapper">
+            <div class="main-content">
+                <section id="details" aria-live="polite"></section>
+                <button id="toggle-details" type="button" style="display: none;">Show Detailed Stats</button>
+            </div>
+            <aside id="detailed-stats" class="detailed-stats hidden" aria-live="polite"></aside>
+        </div>
         <section class="upcoming">
             <h2>Next 20 Pokemon</h2>
             <ul id="upcoming" aria-live="polite"></ul>
