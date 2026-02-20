@@ -108,7 +108,8 @@ function getAvailableSprites(pokemon) {
 		return sprites;
 	}
 
-	// Check all possible sprite types and add them if they exist
+	// Check all possible sprite types and add them if they exist so that way you can see images of them as you go and change the image to see the different images that are available for each Pokemon.
+	//This is just checking if the sprite exists before trying to use it, which prevents errors and allows us to show only the sprites that are actually available for each Pokemon.
 	var spriteTypes = [
 		{ key: 'front_default', label: 'Front' },
 		{ key: 'back_default', label: 'Back' },
