@@ -9,7 +9,7 @@ var POKEAPI_URL = "https://pokeapi.co/api/v2/pokemon";
 // This is a fallback in case the live count fails to load.
 var MAX_POKEMON_ID = 1350;
 // Grab the elements we will update on the page. This could also be done with querySelector() and classes.
-var detailsEl = document.getElementById("details");
+var detailsEl = document.getElementById("details"); //task with this new named class = what to do (with this item)
 var prevBtn = document.getElementById("prev");
 var nextBtn = document.getElementById("next");
 var counterEl = document.getElementById("counter");
@@ -27,7 +27,7 @@ console.log("Fetching Pokemon details from:", url);
 	// fetch() gets data from the internet and returns a Promise.
 	fetch(url)
 		.then((response) => {
-			if (!response.ok) {
+			if (!response.ok) {  //! means "not", so this checks if the response is not ok, which means there was an error with the request. If there was an error, it throws an error with the status code, which will be caught in the catch block below.
 				throw new Error("Request failed with status " + response.status);
 			}
 			// Convert the response into JSON we can use in JS.
@@ -111,13 +111,13 @@ console.log("Details element found:", detailsEl);
 		name = pokemon.name;
 	}
 	var sprite = "";
-	if (pokemon.sprites) {
+	if (pokemon.sprites) { //sprites is the name of the property that holds the image URLs.
 		if (pokemon.sprites.front_default) {
 			sprite = pokemon.sprites.front_default;
 		}
 	}
 
-	// Build the HTML as a simple string.
+	// Build the HTML as a simple string. this is just setting it visually, it isn't actually creating the elements.
 	var html = "<article>";
 	html += "<h2>" + name + "</h2>";
 	if (sprite) {
@@ -157,7 +157,7 @@ function renderUpcoming(listData, startId) {
 }
 console.log("renderUpcoming function defined:", renderUpcoming);
 // Update the counter and disable buttons at the ends of the list.
-function updateNav() {
+function updateNav() { //this makes the navigation buttons work and updates the counter at the top to show which Pokemon ID is currently being displayed.
 	if (counterEl) {
 		counterEl.textContent = "#" + currentId;
 	}
@@ -181,7 +181,7 @@ function loadPokemon(id) {
 	fetchPokemonDetails(id, (details) => { //I really like the => syntax it does make it easier than saying funtion everytime.
 		renderDetails(details);
 		updateNav();
-	});
+	}); //this is running the fetchPokemonDetails function and passing in the id and a callback function that will run once the data is ready. 
 
 	if (upcomingEl) {
 		upcomingEl.innerHTML = "<li>Loading list...</li>";
