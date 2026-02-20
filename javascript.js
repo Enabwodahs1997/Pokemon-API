@@ -14,9 +14,16 @@ var prevBtn = document.getElementById("prev");
 var nextBtn = document.getElementById("next");
 var counterEl = document.getElementById("counter");
 var upcomingEl = document.getElementById("upcoming");
+var prevSpriteBtn = document.getElementById("prev-sprite");
+var nextSpriteBtn = document.getElementById("next-sprite");
+var spriteTypeEl = document.getElementById("sprite-type");
 
 // Track which Pokemon ID is currently shown.
 var currentId = 1;
+// Track current sprite index and available sprites for the current Pokemon
+var currentSpriteIndex = 0;
+var availableSprites = [];
+var currentPokemonData = null;
 
 // Fetch one Pokemon by ID, then run a callback with the data.
 // A callback is needed because fetch() finishes later, so we pass a function
@@ -93,6 +100,39 @@ function fetchPokemonCount(callback) {
 		});
 }
 console.log("fetchPokemonCount function defined:", fetchPokemonCount);
+
+// Get all available sprites for a Pokemon and return them as an array
+function getAvailableSprites(pokemon) {
+	var sprites = [];
+	if (!pokemon || !pokemon.sprites) {
+		return sprites;
+	}
+
+	// Check all possible sprite types and add them if they exist
+	var spriteTypes = [
+		{ key: 'front_default', label: 'Front' },
+		{ key: 'back_default', label: 'Back' },
+		{ key: 'front_shiny', label: 'Front Shiny' },
+		{ key: 'back_shiny', label: 'Back Shiny' },
+		{ key: 'front_female', label: 'Front Female' },
+		{ key: 'back_female', label: 'Back Female' },
+		{ key: 'front_shiny_female', label: 'Front Shiny Female' },
+		{ key: 'back_shiny_female', label: 'Back Shiny Female' }
+	];
+
+	for (var i = 0; i < spriteTypes.length; i++) {
+		var spriteType = spriteTypes[i];
+		if (pokemon.sprites[spriteType.key]) {
+			sprites.push({
+				url: pokemon.sprites[spriteType.key],
+				label: spriteType.label
+			});
+		}
+	}
+
+	return sprites;
+}
+
 // Put the Pokemon name and sprite into the details section.
 function renderDetails(pokemon) {
 	if (!detailsEl) {
@@ -105,27 +145,42 @@ console.log("Details element found:", detailsEl);
 		return;
 	}
 
+	// Store the current Pokemon data
+	currentPokemonData = pokemon;
+	
+	// Get all available sprites
+	availableSprites = getAvailableSprites(pokemon);
+	
+	// Make sure currentSpriteIndex is valid
+	if (currentSpriteIndex >= availableSprites.length) {
+		currentSpriteIndex = 0;
+	}
+
 	// Basic fallback values in case some data is missing.
 	var name = "Unknown Pokemon";
 	if (pokemon.name) {
 		name = pokemon.name;
 	}
 	var sprite = "";
-	if (pokemon.sprites) { //sprites is the name of the property that holds the image URLs.
-		if (pokemon.sprites.front_default) {
-			sprite = pokemon.sprites.front_default;
-		}
+	var spriteLabel = "";
+	
+	if (availableSprites.length > 0) {
+		sprite = availableSprites[currentSpriteIndex].url;
+		spriteLabel = availableSprites[currentSpriteIndex].label;
 	}
 
 	// Build the HTML as a simple string. this is just setting it visually, it isn't actually creating the elements.
 	var html = "<article>";
 	html += "<h2>" + name + "</h2>";
 	if (sprite) {
-		html += `<img src="${sprite}" alt="${name}">`;
+		html += `<img src="${sprite}" alt="${name} - ${spriteLabel}">`;
 	}
 	html += "</article>";
 
 	detailsEl.innerHTML = html;
+	
+	// Update sprite controls
+	updateSpriteControls();
 }
 console.log("renderDetails function defined:", renderDetails);
 
@@ -172,11 +227,30 @@ function updateNav() { //this makes the navigation buttons work and updates the 
 }
 console.log("updateNav function defined:", updateNav);
 
+// Update the sprite controls to show current sprite type and enable/disable buttons
+function updateSpriteControls() {
+	if (spriteTypeEl && availableSprites.length > 0) {
+		spriteTypeEl.textContent = availableSprites[currentSpriteIndex].label + " (" + (currentSpriteIndex + 1) + "/" + availableSprites.length + ")";
+	}
+
+	if (prevSpriteBtn) {
+		prevSpriteBtn.disabled = availableSprites.length <= 1;
+	}
+
+	if (nextSpriteBtn) {
+		nextSpriteBtn.disabled = availableSprites.length <= 1;
+	}
+}
+console.log("updateSpriteControls function defined:", updateSpriteControls);
+
 // Show a loading message, fetch the Pokemon, then render it.
 function loadPokemon(id) {
 	if (detailsEl) {
 		detailsEl.textContent = "Loading...";
 	}
+	
+	// Reset sprite index when loading a new Pokemon
+	currentSpriteIndex = 0;
 
 	fetchPokemonDetails(id, (details) => { //I really like the => syntax it does make it easier than saying funtion everytime.
 		renderDetails(details);
@@ -228,6 +302,31 @@ function init() {
 			if (currentId < MAX_POKEMON_ID) {
 				currentId = currentId + 1;
 				loadPokemon(currentId);
+			}
+		});
+	}
+
+	// Add sprite navigation buttons
+	if (prevSpriteBtn) {
+		prevSpriteBtn.addEventListener("click", () => {
+			if (availableSprites.length > 0) {
+				currentSpriteIndex = currentSpriteIndex - 1;
+				if (currentSpriteIndex < 0) {
+					currentSpriteIndex = availableSprites.length - 1; // Loop to end
+				}
+				renderDetails(currentPokemonData);
+			}
+		});
+	}
+
+	if (nextSpriteBtn) {
+		nextSpriteBtn.addEventListener("click", () => {
+			if (availableSprites.length > 0) {
+				currentSpriteIndex = currentSpriteIndex + 1;
+				if (currentSpriteIndex >= availableSprites.length) {
+					currentSpriteIndex = 0; // Loop back to start
+				}
+				renderDetails(currentPokemonData);
 			}
 		});
 	}
